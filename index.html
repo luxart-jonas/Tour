@@ -192,6 +192,13 @@
   <h1>Tagestour-Planer</h1>
   <p class="sub">Standort finden, Ideen eingeben, Vorschlag wählen &amp; anpassen — am Ende zwei Links für Google Maps.</p>
 
+  <div class="card" id="apiKeyCard" style="margin-bottom:20px;">
+    <label>Anthropic API-Key</label>
+    <p style="margin:0 0 10px;color:var(--muted);font-size:0.85rem;">Wird nur lokal in deinem Browser gespeichert (localStorage), nie irgendwohin geschickt außer direkt an Anthropic.</p>
+    <input type="text" id="apiKeyInput" placeholder="sk-ant-..." style="-webkit-text-security:disc;">
+    <div class="status hide" id="apiKeySaved" style="margin-top:8px;"><span style="color:var(--teal);">✓ gespeichert</span></div>
+  </div>
+
   <div class="roadmap" id="roadmap">
     <div class="dot active" data-step="0"></div>
     <div class="seg" data-seg="0"></div>
@@ -293,10 +300,28 @@ function setStep(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// API key handling (localStorage, same pattern as other Luxart Jonas apps)
+const apiKeyInput = document.getElementById('apiKeyInput');
+const savedKey = localStorage.getItem('ant_key');
+if(savedKey) apiKeyInput.value = savedKey;
+apiKeyInput.addEventListener('change', () => {
+  localStorage.setItem('ant_key', apiKeyInput.value.trim());
+  const el = document.getElementById('apiKeySaved');
+  el.classList.remove('hide');
+  setTimeout(()=>el.classList.add('hide'), 2000);
+});
+
 async function callClaude(systemPrompt, userPrompt, maxTokens=1200){
+  const key = localStorage.getItem('ant_key');
+  if(!key) throw new Error("Bitte zuerst deinen Anthropic API-Key oben eintragen.");
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: {
+      "Content-Type":"application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
       max_tokens: maxTokens,
@@ -305,6 +330,9 @@ async function callClaude(systemPrompt, userPrompt, maxTokens=1200){
     })
   });
   const data = await response.json();
+  if(data.error){
+    throw new Error(data.error.message || "API-Fehler");
+  }
   const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
   const clean = text.replace(/```json|```/g,"").trim();
   return JSON.parse(clean);
