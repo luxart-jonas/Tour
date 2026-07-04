@@ -64,7 +64,37 @@
     display:inline-block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;
     color:var(--amber);background:var(--amber-dim);padding:3px 9px;border-radius:20px;margin-bottom:10px;
   }
-  .propDesc{color:var(--text);font-size:0.95rem;line-height:1.65;margin:0 0 16px;}
+  .propDesc{color:var(--text);font-size:0.95rem;line-height:1.65;margin:0 0 14px;}
+
+  .highlights{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .highlights li{
+    display:flex;gap:9px;align-items:flex-start;font-size:0.87rem;color:var(--text);
+    background:#0d1826;border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+  }
+  .highlights li::before{content:'★';color:var(--amber);flex-shrink:0;font-size:0.8rem;line-height:1.4;}
+  .highlights-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:600;margin:0 0 8px;}
+
+  .savedToggle{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+    background:#0d1826;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:16px;
+  }
+  .savedToggle .t{font-size:0.88rem;font-weight:600;}
+  .savedToggle .chev{color:var(--muted);transition:transform .2s;font-size:0.8rem;}
+  .savedToggle.open .chev{transform:rotate(180deg);}
+  .savedList{margin-bottom:16px;}
+  .savedItem{
+    display:flex;align-items:center;gap:10px;background:var(--bg-card);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin-bottom:8px;
+  }
+  .savedItem .info{flex:1;min-width:0;cursor:pointer;}
+  .savedItem .st{font-weight:600;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .savedItem .sd{color:var(--muted);font-size:0.75rem;margin-top:2px;}
+  .savedItem .delBtn{
+    background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:6px;
+    flex-shrink:0;border-radius:6px;line-height:1;
+  }
+  .savedItem .delBtn:hover{color:var(--error);background:#e2635a1a;}
+  .savedEmpty{color:var(--muted);font-size:0.85rem;padding:8px 2px;}
 
   .stoplist{list-style:none;margin:0 0 16px;padding:0;}
   .stoplist li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
@@ -105,6 +135,12 @@
   <p class="sub">Idee eingeben, Vorschlag anpassen, direkt Google-Maps-Links und ggf. eine Wander-Route bekommen.</p>
   <div class="locbadge" id="locBadge"><span class="dot" id="locDot"></span><span id="locText">Standort wird ermittelt…</span></div>
 
+  <div class="savedToggle" id="savedToggle">
+    <span class="t" id="savedToggleText">📂 Gespeicherte Touren (0)</span>
+    <span class="chev">▾</span>
+  </div>
+  <div class="savedList hide" id="savedList"></div>
+
   <div class="card" id="apiKeyCard">
     <label>Anthropic API-Key</label>
     <p style="margin:0 0 10px;color:var(--muted);font-size:0.85rem;">Nur lokal in deinem Browser gespeichert (localStorage), geht direkt an Anthropic.</p>
@@ -126,6 +162,8 @@
     <span class="propType" id="propType"></span>
     <h3 class="propTitle" id="propTitle"></h3>
     <p class="propDesc" id="propDesc"></p>
+    <div class="highlights-label hide" id="propHLabel">Highlights</div>
+    <ul class="highlights" id="propHighlights"></ul>
     <ul class="stoplist" id="propStops"></ul>
     <div class="hikebox hide" id="propHikeBox"></div>
 
@@ -142,7 +180,10 @@
   <!-- Ergebnis -->
   <div class="card hide" id="resultCard">
     <label>Deine Tour ist fertig</label>
-    <h3 id="finalTitle" style="font-family:'Fraunces',serif;font-size:1.25rem;margin:6px 0 14px;"></h3>
+    <h3 id="finalTitle" style="font-family:'Fraunces',serif;font-size:1.25rem;margin:6px 0 10px;"></h3>
+    <p id="finalDesc" class="propDesc"></p>
+    <div class="highlights-label hide" id="finalHLabel">Highlights</div>
+    <ul class="highlights" id="finalHighlights"></ul>
     <div id="finalStopsList"></div>
     <div id="finalHikeBox"></div>
     <div class="maplinks" id="mapLinks"></div>
@@ -262,24 +303,26 @@ async function generateProposal(isRegenerate){
   document.getElementById('btnGenerate').disabled = true;
   document.getElementById('btnRegenerate').disabled = true;
   try{
-    const sys = "Du bist ein lokaler Reiseplaner. Antworte AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Erklärtext, ohne Codeblock-Zeichen.";
+    const sys = "Du bist ein erfahrener, geschmackssicherer Reisekurator, der für einen kleinen Premium-Reiseführer schreibt — kein Zufallsgenerator. Jede Empfehlung ist eine echte, begründete Wahl, kein beliebiges Zusammenwürfeln. Antworte AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Erklärtext, ohne Codeblock-Zeichen.";
     const avoid = state.previousTitles.length ? `\nVermeide diese bereits gezeigten Vorschläge und mach etwas spürbar anderes: ${state.previousTitles.join(', ')}.` : '';
     const usr = `Standort: ${state.locationLabel || 'unbekannt, nimm eine plausible Region in Deutschland an'}${state.lat?` (${state.lat.toFixed(4)}, ${state.lon.toFixed(4)})`:''}.
 Idee des Nutzers für einen Tagesausflug: "${state.ideas}"${avoid}
 
-Entwirf GENAU EINEN konkreten Vorschlag. Entscheide zuerst selbst, ob es sich eher um
+Kuratiere GENAU EINEN durchdachten Vorschlag, so wie ein guter Reiseführer eine einzelne, wirklich lohnende Empfehlung ausspricht — nicht die naheliegendste Zufallskombination. Entscheide zuerst selbst, ob es sich eher um
 (a) "ziel" handelt — ein einzelnes Ausflugsziel (z. B. ein Lokal, eine Burg, ein Aussichtspunkt), oder
 (b) "autotour" — eine Rundfahrt mit mehreren Stopps.
 Falls es am Ziel sinnvoll ist, danach zu Fuß weiterzugehen (Wanderung, Spaziergang, Rundweg), ergänze ein "hike"-Objekt, sonst setze "hike" auf null.
 
-Schreibe die Beschreibung ausführlich und sprachlich lebendig: Highlights, Atmosphäre, warum es sich lohnt, 4-6 Sätze.
+Schreibe die Beschreibung ausführlich und sprachlich lebendig: Atmosphäre, warum gerade diese Wahl, 4-6 Sätze.
+Ergänze danach 3-5 kurze, prägnante Highlights (je 3-8 Wörter, konkret statt generisch, z. B. "Terrasse mit Blick auf die Sieg" statt "schöne Aussicht").
 Gib für jeden Stopp echte, für Google Maps auffindbare Adressen und eine ungefähre Koordinate (lat/lon) an, auch wenn nur geschätzt.
 
 Gib NUR folgendes JSON zurück:
 {
   "type": "ziel" | "autotour",
   "title": "kurzer prägnanter Titel",
-  "description": "ausführliche, lebendige Beschreibung mit Highlights",
+  "description": "ausführliche, lebendige Beschreibung",
+  "highlights": ["kurzes Highlight", "kurzes Highlight", "kurzes Highlight"],
   "stops": [
     {"name":"...", "address":"...", "lat":0.0, "lon":0.0, "note":"kurzer Hinweis was man dort macht/erlebt"}
   ],
@@ -315,6 +358,15 @@ function renderProposal(){
   document.getElementById('propTitle').textContent = p.title;
   document.getElementById('propDesc').textContent = p.description;
 
+  const hEl = document.getElementById('propHighlights');
+  if(p.highlights && p.highlights.length){
+    hEl.innerHTML = p.highlights.map(h => `<li>${escapeHtml(h)}</li>`).join('');
+    show('propHLabel');
+  } else {
+    hEl.innerHTML = '';
+    hide('propHLabel');
+  }
+
   const stopsEl = document.getElementById('propStops');
   stopsEl.innerHTML = p.stops.map((s,i) => `
     <li>
@@ -339,7 +391,8 @@ function renderProposal(){
 
   const stopsText = p.stops.map(s => `- ${s.name} (${s.address})${s.note ? ': '+s.note : ''}`).join('\n');
   const hikeText = p.hike ? `\n\nWanderung: ${p.hike.name} (ca. ${p.hike.distance_km_estimate} km) - ${p.hike.description||''}` : '';
-  const editText = `${p.title}\n\n${p.description}\n\nStationen:\n${stopsText}${hikeText}`;
+  const hlText = (p.highlights && p.highlights.length) ? `\n\nHighlights:\n${p.highlights.map(h=>'- '+h).join('\n')}` : '';
+  const editText = `${p.title}\n\n${p.description}${hlText}\n\nStationen:\n${stopsText}${hikeText}`;
   document.getElementById('editInput').value = editText;
   document.getElementById('editInput').dataset.original = editText;
 }
@@ -363,7 +416,7 @@ Der Nutzer hat diesen Text bearbeitet:
 ${editedNow}
 """
 
-Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Original (type, title, description, stops[{name,address,lat,lon,note}], hike). Behalte reale, für Google Maps auffindbare Adressen/Koordinaten bei bzw. ergänze passend, falls neue Orte genannt wurden. Gib NUR das JSON zurück.`;
+Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Original (type, title, description, highlights[], stops[{name,address,lat,lon,note}], hike). Behalte reale, für Google Maps auffindbare Adressen/Koordinaten bei bzw. ergänze passend, falls neue Orte genannt wurden. Gib NUR das JSON zurück.`;
       finalData = await callClaude(sys, usr, 1800);
     } else {
       finalData = state.proposal;
@@ -416,9 +469,19 @@ Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Origi
   }
 });
 
-function renderFinal(){
+function renderFinal(fromStorage){
   const t = state.finalTour;
   document.getElementById('finalTitle').textContent = t.title;
+  document.getElementById('finalDesc').textContent = t.description || '';
+
+  const fhEl = document.getElementById('finalHighlights');
+  if(t.highlights && t.highlights.length){
+    fhEl.innerHTML = t.highlights.map(h => `<li>${escapeHtml(h)}</li>`).join('');
+    show('finalHLabel');
+  } else {
+    fhEl.innerHTML = '';
+    hide('finalHLabel');
+  }
 
   const stopsListEl = document.getElementById('finalStopsList');
   stopsListEl.innerHTML = '<ul class="stoplist">' + t.stops.map((s,i) => {
@@ -486,7 +549,84 @@ function renderFinal(){
   } else {
     kmlWrap.innerHTML = '';
   }
+
+  if(!fromStorage){
+    saveTourToStorage(t);
+  }
 }
+
+// ---- Persistente Speicherung gespeicherter Touren (localStorage, funktioniert auch auf GitHub Pages) ----
+async function saveTourToStorage(tour){
+  try{
+    const key = 'tour:' + Date.now();
+    const record = { ...tour, _savedAt: Date.now() };
+    localStorage.setItem(key, JSON.stringify(record));
+    await renderSavedTours();
+  }catch(e){
+    console.error('Speichern fehlgeschlagen', e);
+  }
+}
+
+async function loadAllSavedTours(){
+  const tours = [];
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(!k || !k.startsWith('tour:')) continue;
+    try{
+      const raw = localStorage.getItem(k);
+      if(raw) tours.push({ key: k, data: JSON.parse(raw) });
+    }catch(e){ /* einzelnen Eintrag überspringen */ }
+  }
+  tours.sort((a,b) => (b.data._savedAt||0) - (a.data._savedAt||0));
+  return tours;
+}
+
+async function renderSavedTours(){
+  let tours = [];
+  try{ tours = await loadAllSavedTours(); }catch(e){ /* storage evtl. nicht verfügbar */ }
+  document.getElementById('savedToggleText').textContent = `📂 Gespeicherte Touren (${tours.length})`;
+  const listEl = document.getElementById('savedList');
+  if(!tours.length){
+    listEl.innerHTML = '<div class="savedEmpty">Noch keine Tour gespeichert.</div>';
+    return;
+  }
+  listEl.innerHTML = '';
+  tours.forEach(({key, data}) => {
+    const date = data._savedAt ? new Date(data._savedAt).toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric'}) : '';
+    const div = document.createElement('div');
+    div.className = 'savedItem';
+    div.innerHTML = `
+      <div class="info">
+        <div class="st">${escapeHtml(data.title)}</div>
+        <div class="sd">${data.type === 'autotour' ? 'Autotour' : 'Ziel'} &middot; ${date}</div>
+      </div>
+      <button class="delBtn" title="Löschen">🗑</button>`;
+    div.querySelector('.info').addEventListener('click', () => openSavedTour(data));
+    div.querySelector('.delBtn').addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      try{ localStorage.removeItem(key); }catch(e){}
+      renderSavedTours();
+    });
+    listEl.appendChild(div);
+  });
+}
+
+function openSavedTour(data){
+  state.finalTour = data;
+  renderFinal(true);
+  hide('ideaCard'); hide('proposalCard');
+  show('resultCard');
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('savedToggle').addEventListener('click', () => {
+  const listEl = document.getElementById('savedList');
+  const toggleEl = document.getElementById('savedToggle');
+  listEl.classList.toggle('hide');
+  toggleEl.classList.toggle('open');
+});
+
+renderSavedTours();
 
 function slugify(str){
   return (str||'wanderung').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'wanderung';
