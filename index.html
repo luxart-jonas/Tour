@@ -8,104 +8,47 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0f1b2b;
-    --bg-card:#16263b;
-    --bg-card-hover:#1c2f48;
-    --line:#25395470;
-    --amber:#e8a33d;
-    --amber-dim:#e8a33d33;
-    --teal:#4fa89b;
-    --text:#f4ede1;
-    --muted:#9fb0c3;
-    --error:#e2635a;
+    --bg:#0f1b2b; --bg-card:#16263b; --bg-card-hover:#1c2f48; --line:#25395470;
+    --amber:#e8a33d; --amber-dim:#e8a33d33; --teal:#4fa89b; --teal-dim:#4fa89b26;
+    --text:#f4ede1; --muted:#9fb0c3; --error:#e2635a;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Inter',sans-serif;
-    min-height:100vh;
-    padding:32px 16px 80px;
+    background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
+    min-height:100vh; padding:32px 16px 80px;
     background-image:
       radial-gradient(circle at 15% 8%, #1a2c4322 0%, transparent 40%),
       radial-gradient(circle at 90% 85%, #4fa89b14 0%, transparent 45%);
   }
   .wrap{max-width:560px;margin:0 auto;}
-  h1{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:2rem;
-    letter-spacing:-0.01em;
-    margin:0 0 4px;
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:2rem;letter-spacing:-0.01em;margin:0 0 4px;}
+  .eyebrow{font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:10px;display:block;}
+  .sub{color:var(--muted);font-size:0.95rem;margin:0 0 18px;line-height:1.5;}
+  .locbadge{
+    display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--muted);
+    background:#0d1826;border:1px solid var(--line);border-radius:20px;padding:6px 12px;margin-bottom:22px;
   }
-  .eyebrow{
-    font-size:0.75rem;
-    letter-spacing:0.14em;
-    text-transform:uppercase;
-    color:var(--amber);
-    font-weight:600;
-    margin-bottom:10px;
-    display:block;
-  }
-  .sub{color:var(--muted);font-size:0.95rem;margin:0 0 28px;line-height:1.5;}
+  .locbadge .dot{width:7px;height:7px;border-radius:50%;background:var(--line);flex-shrink:0;}
+  .locbadge .dot.on{background:var(--teal);box-shadow:0 0 0 3px var(--teal-dim);}
+  .locbadge .dot.err{background:var(--error);}
 
-  /* step road */
-  .roadmap{display:flex;align-items:center;margin-bottom:30px;}
-  .roadmap .dot{
-    width:11px;height:11px;border-radius:50%;
-    background:var(--bg-card);border:2px solid var(--line);
-    flex-shrink:0;transition:all .3s;
-  }
-  .roadmap .dot.active{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 4px var(--amber-dim);}
-  .roadmap .dot.done{background:var(--teal);border-color:var(--teal);}
-  .roadmap .seg{flex:1;height:2px;background:var(--line);margin:0 4px;position:relative;overflow:hidden;}
-  .roadmap .seg.done::after{content:'';position:absolute;inset:0;background:var(--teal);}
-  .roadmap .seg svg{position:absolute;top:-4px;left:0;width:100%;}
-
-  .card{
-    background:var(--bg-card);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:22px;
-    margin-bottom:16px;
-  }
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px;}
   label{display:block;font-size:0.8rem;color:var(--muted);margin-bottom:8px;font-weight:500;}
   textarea, input[type=text]{
-    width:100%;
-    background:#0d1826;
-    border:1px solid var(--line);
-    border-radius:10px;
-    color:var(--text);
-    padding:12px 14px;
-    font-family:'Inter',sans-serif;
-    font-size:0.95rem;
-    resize:vertical;
-    line-height:1.5;
+    width:100%;background:#0d1826;border:1px solid var(--line);border-radius:10px;color:var(--text);
+    padding:12px 14px;font-family:'Inter',sans-serif;font-size:0.95rem;resize:vertical;line-height:1.5;
   }
   textarea:focus, input:focus{outline:2px solid var(--amber);outline-offset:1px;}
   .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    background:var(--amber);
-    color:#1a1305;
-    border:none;
-    border-radius:10px;
-    padding:13px 20px;
-    font-family:'Inter',sans-serif;
-    font-weight:600;
-    font-size:0.95rem;
-    cursor:pointer;
-    width:100%;
-    transition:transform .12s, background .12s;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--amber);color:#1a1305;
+    border:none;border-radius:10px;padding:13px 20px;font-family:'Inter',sans-serif;font-weight:600;font-size:0.95rem;
+    cursor:pointer;width:100%;transition:transform .12s, background .12s;
   }
   .btn:hover{background:#f0b357;}
   .btn:active{transform:scale(0.98);}
   .btn:disabled{opacity:0.45;cursor:not-allowed;}
-  .btn.secondary{
-    background:transparent;
-    color:var(--text);
-    border:1px solid var(--line);
-  }
+  .btn.secondary{background:transparent;color:var(--text);border:1px solid var(--line);}
   .btn.secondary:hover{background:#1c2f48;}
   .btn.teal{background:var(--teal);color:#08221e;}
   .btn.teal:hover{background:#61c1b3;}
@@ -113,76 +56,45 @@
   .row .btn{flex:1;}
 
   .status{color:var(--muted);font-size:0.88rem;display:flex;align-items:center;gap:8px;margin-top:10px;}
-  .spinner{
-    width:14px;height:14px;border-radius:50%;
-    border:2px solid var(--line);border-top-color:var(--amber);
-    animation:spin .7s linear infinite;flex-shrink:0;
-  }
+  .spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--amber);animation:spin .7s linear infinite;flex-shrink:0;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
-  .locbox{
-    display:flex;align-items:center;gap:10px;
-    background:#0d1826;border:1px solid var(--line);border-radius:10px;
-    padding:12px 14px;margin-bottom:16px;font-size:0.9rem;color:var(--muted);
+  h3.propTitle{font-family:'Fraunces',serif;font-weight:600;font-size:1.3rem;margin:4px 0 10px;}
+  .propType{
+    display:inline-block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;
+    color:var(--amber);background:var(--amber-dim);padding:3px 9px;border-radius:20px;margin-bottom:10px;
   }
-  .locbox strong{color:var(--text);}
+  .propDesc{color:var(--text);font-size:0.95rem;line-height:1.65;margin:0 0 16px;}
 
-  .proposal{
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:20px;
-    margin-bottom:14px;
-    cursor:pointer;
-    transition:border-color .15s, background .15s;
-  }
-  .proposal:hover{border-color:var(--amber);background:var(--bg-card-hover);}
-  .proposal.selected{border-color:var(--amber);background:var(--bg-card-hover);}
-  .proposal h3{
-    font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:0 0 6px;
-  }
-  .proposal p{margin:0 0 12px;color:var(--muted);font-size:0.9rem;line-height:1.5;}
-  .stoplist{list-style:none;margin:0;padding:0;}
-  .stoplist li{
-    display:flex;align-items:baseline;gap:10px;
-    font-size:0.85rem;color:var(--text);padding:5px 0;
-  }
-  .stoplist li .idx{
-    font-family:'Fraunces',serif;color:var(--amber);font-weight:600;
-    width:18px;flex-shrink:0;
-  }
+  .stoplist{list-style:none;margin:0 0 16px;padding:0;}
+  .stoplist li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .stoplist li:last-child{border-bottom:none;}
+  .stoplist .idx{font-family:'Fraunces',serif;color:var(--amber);font-weight:600;width:20px;flex-shrink:0;}
+  .stoplist .name{font-weight:600;font-size:0.92rem;}
+  .stoplist .addr{color:var(--muted);font-size:0.8rem;margin-top:1px;}
+  .stoplist .time{color:var(--teal);font-size:0.78rem;margin-top:3px;font-weight:500;}
+  .stoplist .note{color:var(--muted);font-size:0.82rem;margin-top:3px;font-style:italic;}
 
-  .route-visual{position:relative;padding-left:24px;margin:18px 0;}
-  .route-line{position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:repeating-linear-gradient(to bottom, var(--teal) 0 5px, transparent 5px 10px);}
-  .route-stop{position:relative;margin-bottom:16px;}
-  .route-stop:last-child{margin-bottom:0;}
-  .route-stop::before{
-    content:'';position:absolute;left:-24px;top:4px;
-    width:11px;height:11px;border-radius:50%;background:var(--teal);
-    border:2px solid var(--bg);
-  }
-  .route-stop .name{font-weight:600;font-size:0.95rem;}
-  .route-stop .addr{color:var(--muted);font-size:0.82rem;}
+  .hikebox{background:#0d1826;border:1px solid var(--teal-dim);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .hikebox .htitle{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95rem;margin-bottom:6px;}
+  .hikebox .hmeta{color:var(--muted);font-size:0.82rem;margin-bottom:4px;}
 
-  .maplinks{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+  .maplinks{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
   .maplink{
-    display:flex;align-items:center;gap:12px;
-    background:#0d1826;border:1px solid var(--line);border-radius:12px;
-    padding:14px 16px;text-decoration:none;color:var(--text);
-    transition:border-color .15s;
+    display:flex;align-items:center;gap:12px;background:#0d1826;border:1px solid var(--line);border-radius:12px;
+    padding:13px 16px;text-decoration:none;color:var(--text);transition:border-color .15s;
   }
   .maplink:hover{border-color:var(--amber);}
-  .maplink .ic{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .maplink .ic{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;}
   .maplink .ic.a{background:var(--amber-dim);}
-  .maplink .ic.b{background:#4fa89b2e;}
-  .maplink .t{font-weight:600;font-size:0.92rem;}
-  .maplink .s{color:var(--muted);font-size:0.78rem;}
+  .maplink .ic.b{background:var(--teal-dim);}
+  .maplink .t{font-weight:600;font-size:0.9rem;}
+  .maplink .s{color:var(--muted);font-size:0.76rem;}
 
-  .err{
-    color:var(--error);font-size:0.85rem;margin-top:8px;
-    background:#e2635a1a;border:1px solid #e2635a44;border-radius:8px;padding:10px 12px;
-  }
+  .err{color:var(--error);font-size:0.85rem;margin-top:8px;background:#e2635a1a;border:1px solid #e2635a44;border-radius:8px;padding:10px 12px;}
   .hide{display:none !important;}
-  .backlink{color:var(--muted);font-size:0.85rem;text-decoration:underline;cursor:pointer;margin-top:14px;display:inline-block;}
+  .backlink{color:var(--muted);font-size:0.85rem;text-decoration:underline;cursor:pointer;margin-top:6px;display:inline-block;}
+  .disclaimer{color:var(--muted);font-size:0.75rem;margin-top:14px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -190,79 +102,52 @@
 
   <span class="eyebrow">Tag für Tag geplant</span>
   <h1>Tagestour-Planer</h1>
-  <p class="sub">Standort finden, Ideen eingeben, Vorschlag wählen &amp; anpassen — am Ende zwei Links für Google Maps.</p>
+  <p class="sub">Idee eingeben, Vorschlag anpassen, direkt Google-Maps-Links und ggf. eine Wander-Route bekommen.</p>
+  <div class="locbadge" id="locBadge"><span class="dot" id="locDot"></span><span id="locText">Standort wird ermittelt…</span></div>
 
-  <div class="card" id="apiKeyCard" style="margin-bottom:20px;">
+  <div class="card" id="apiKeyCard">
     <label>Anthropic API-Key</label>
-    <p style="margin:0 0 10px;color:var(--muted);font-size:0.85rem;">Wird nur lokal in deinem Browser gespeichert (localStorage), nie irgendwohin geschickt außer direkt an Anthropic.</p>
+    <p style="margin:0 0 10px;color:var(--muted);font-size:0.85rem;">Nur lokal in deinem Browser gespeichert (localStorage), geht direkt an Anthropic.</p>
     <input type="text" id="apiKeyInput" placeholder="sk-ant-..." style="-webkit-text-security:disc;">
-    <div class="status hide" id="apiKeySaved" style="margin-top:8px;"><span style="color:var(--teal);">✓ gespeichert</span></div>
+    <div class="status hide" id="apiKeySaved"><span style="color:var(--teal);">✓ gespeichert</span></div>
   </div>
 
-  <div class="roadmap" id="roadmap">
-    <div class="dot active" data-step="0"></div>
-    <div class="seg" data-seg="0"></div>
-    <div class="dot" data-step="1"></div>
-    <div class="seg" data-seg="1"></div>
-    <div class="dot" data-step="2"></div>
-    <div class="seg" data-seg="2"></div>
-    <div class="dot" data-step="3"></div>
-  </div>
-
-  <!-- STEP 0: Standort -->
-  <div class="card" id="step0">
-    <label>Schritt 1 — Standort</label>
-    <p style="margin:0 0 16px;color:var(--muted);font-size:0.9rem;">Wir brauchen deinen aktuellen Standort, um passende Ausflugsziele in der Nähe vorzuschlagen.</p>
-    <button class="btn" id="btnLocate">📍 Standort finden</button>
-    <div class="status hide" id="locStatus"><div class="spinner"></div><span>Suche Standort…</span></div>
-    <div class="err hide" id="locErr"></div>
-    <div id="manualLocWrap" class="hide" style="margin-top:14px;">
-      <label>Oder Ort manuell eingeben</label>
-      <input type="text" id="manualLoc" placeholder="z. B. Rösrath, Deutschland">
-      <button class="btn secondary" style="margin-top:10px;" id="btnManualLoc">Übernehmen</button>
-    </div>
-  </div>
-
-  <!-- STEP 1: Ideen -->
-  <div class="card hide" id="step1">
-    <div class="locbox" id="locboxDisplay"></div>
-    <label>Schritt 2 — Deine Ideen für die Tagestour</label>
-    <textarea id="ideasInput" rows="4" placeholder="z. B. etwas mit Natur, ein Café, vielleicht eine kleine Burg oder Aussicht, insgesamt nicht zu lang mit dem Auto..."></textarea>
-    <button class="btn" id="btnGenerate" style="margin-top:14px;">✨ 2 Vorschläge generieren</button>
-    <div class="status hide" id="genStatus"><div class="spinner"></div><span>Claude entwirft zwei Touren…</span></div>
+  <!-- Idee -->
+  <div class="card" id="ideaCard">
+    <label>Deine Idee für die Tour</label>
+    <textarea id="ideasInput" rows="4" placeholder="z. B. eine Burg in der Nähe mit gutem Café, oder: ein Ausflugslokal mit Seeblick, oder: Autotour mit Zwischenstopp und kleiner Wanderung am Ziel..."></textarea>
+    <button class="btn" id="btnGenerate" style="margin-top:14px;">✨ Tour generieren</button>
+    <div class="status hide" id="genStatus"><div class="spinner"></div><span id="genStatusText">Claude entwirft die Tour…</span></div>
     <div class="err hide" id="genErr"></div>
   </div>
 
-  <!-- STEP 2: Auswahl -->
-  <div class="hide" id="step2">
-    <label style="margin-bottom:14px;">Schritt 3 — Vorschlag wählen</label>
-    <div id="proposalsWrap"></div>
-    <span class="backlink" id="backTo1">← Ideen ändern</span>
-  </div>
+  <!-- Vorschlag / Edit -->
+  <div class="card hide" id="proposalCard">
+    <span class="propType" id="propType"></span>
+    <h3 class="propTitle" id="propTitle"></h3>
+    <p class="propDesc" id="propDesc"></p>
+    <ul class="stoplist" id="propStops"></ul>
+    <div class="hikebox hide" id="propHikeBox"></div>
 
-  <!-- STEP 3: Bearbeiten -->
-  <div class="card hide" id="step3">
-    <label>Schritt 4 — Anpassen (optional)</label>
-    <p style="margin:0 0 12px;color:var(--muted);font-size:0.88rem;">Ändere den Text nach Belieben. Beim Bestätigen wird die Route neu daraus abgeleitet.</p>
-    <textarea id="editInput" rows="6"></textarea>
+    <label style="margin-top:6px;">Anpassen (optional)</label>
+    <textarea id="editInput" rows="5"></textarea>
     <div class="row" style="margin-top:14px;">
-      <button class="btn secondary" id="backTo2">← Zurück</button>
+      <button class="btn secondary" id="btnRegenerate">↺ Nächste Tour generieren</button>
       <button class="btn" id="btnConfirm">Bestätigen</button>
     </div>
-    <div class="status hide" id="confirmStatus"><div class="spinner"></div><span>Route wird finalisiert…</span></div>
+    <div class="status hide" id="confirmStatus"><div class="spinner"></div><span id="confirmStatusText">Route wird finalisiert…</span></div>
     <div class="err hide" id="confirmErr"></div>
   </div>
 
-  <!-- STEP 4: Ergebnis -->
-  <div class="card hide" id="step4">
-    <label>Deine Tour</label>
-    <h3 id="finalTitle" style="font-family:'Fraunces',serif;font-size:1.3rem;margin:6px 0 4px;"></h3>
-    <p id="finalDesc" style="color:var(--muted);font-size:0.9rem;margin:0 0 4px;"></p>
-    <div class="route-visual">
-      <div class="route-line"></div>
-      <div id="routeStops"></div>
-    </div>
+  <!-- Ergebnis -->
+  <div class="card hide" id="resultCard">
+    <label>Deine Tour ist fertig</label>
+    <h3 id="finalTitle" style="font-family:'Fraunces',serif;font-size:1.25rem;margin:6px 0 14px;"></h3>
+    <div id="finalStopsList"></div>
+    <div id="finalHikeBox"></div>
     <div class="maplinks" id="mapLinks"></div>
+    <div id="kmlWrap"></div>
+    <p class="disclaimer">Fahrzeiten sind Schätzungen auf Basis ungefährer Koordinaten, keine Garantie. Bei der Wanderung prüfe die Route vor Ort.</p>
     <span class="backlink" id="restartLink">↺ Neue Tour planen</span>
   </div>
 
@@ -270,48 +155,26 @@
 
 <script>
 const state = {
-  step: 0,
-  lat: null, lon: null,
-  locationLabel: '',
-  ideas: '',
-  proposals: [],
-  selectedIndex: null,
-  editedText: '',
+  lat: null, lon: null, locationLabel: null,
+  ideas: '', proposal: null, previousTitles: [],
   finalTour: null
 };
 
 function show(id){ document.getElementById(id).classList.remove('hide'); }
 function hide(id){ document.getElementById(id).classList.add('hide'); }
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str??''; return d.innerHTML; }
 
-function setStep(n){
-  state.step = n;
-  ['step0','step1','step2','step3','step4'].forEach((id,i)=>{
-    if(i===n) show(id); else hide(id);
-  });
-  document.querySelectorAll('.roadmap .dot').forEach(dot=>{
-    const s = parseInt(dot.dataset.step);
-    dot.classList.toggle('active', s===Math.min(n,3));
-    dot.classList.toggle('done', s<n);
-  });
-  document.querySelectorAll('.roadmap .seg').forEach(seg=>{
-    const s = parseInt(seg.dataset.seg);
-    seg.classList.toggle('done', s<n);
-  });
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-// API key handling (localStorage, same pattern as other Luxart Jonas apps)
+// ---- API key ----
 const apiKeyInput = document.getElementById('apiKeyInput');
 const savedKey = localStorage.getItem('ant_key');
 if(savedKey) apiKeyInput.value = savedKey;
 apiKeyInput.addEventListener('change', () => {
   localStorage.setItem('ant_key', apiKeyInput.value.trim());
-  const el = document.getElementById('apiKeySaved');
-  el.classList.remove('hide');
-  setTimeout(()=>el.classList.add('hide'), 2000);
+  show('apiKeySaved');
+  setTimeout(()=>hide('apiKeySaved'), 2000);
 });
 
-async function callClaude(systemPrompt, userPrompt, maxTokens=1200){
+async function callClaude(systemPrompt, userPrompt, maxTokens=1600){
   const key = localStorage.getItem('ant_key');
   if(!key) throw new Error("Bitte zuerst deinen Anthropic API-Key oben eintragen.");
   const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -330,20 +193,17 @@ async function callClaude(systemPrompt, userPrompt, maxTokens=1200){
     })
   });
   const data = await response.json();
-  if(data.error){
-    throw new Error(data.error.message || "API-Fehler");
-  }
+  if(data.error) throw new Error(data.error.message || "API-Fehler");
   const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
   const clean = text.replace(/```json|```/g,"").trim();
   return JSON.parse(clean);
 }
 
-// ---- Step 0: Standort ----
-document.getElementById('btnLocate').addEventListener('click', () => {
-  hide('locErr');
-  show('locStatus');
+// ---- Standort im Hintergrund ----
+(function locateSilently(){
   if(!navigator.geolocation){
-    handleLocError("Geolocation wird von diesem Browser nicht unterstützt.");
+    document.getElementById('locText').textContent = "Standort nicht verfügbar";
+    document.getElementById('locDot').classList.add('err');
     return;
   }
   navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -353,144 +213,200 @@ document.getElementById('btnLocate').addEventListener('click', () => {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${state.lat}&lon=${state.lon}&zoom=12`);
       const j = await res.json();
       const a = j.address || {};
-      state.locationLabel = a.town || a.city || a.village || a.municipality || a.county || j.display_name || `${state.lat.toFixed(3)}, ${state.lon.toFixed(3)}`;
+      state.locationLabel = a.town || a.city || a.village || a.municipality || a.county || `${state.lat.toFixed(3)}, ${state.lon.toFixed(3)}`;
     }catch(e){
       state.locationLabel = `${state.lat.toFixed(3)}, ${state.lon.toFixed(3)}`;
     }
-    hide('locStatus');
-    goToIdeas();
+    document.getElementById('locText').textContent = "Standort: " + state.locationLabel;
+    document.getElementById('locDot').classList.add('on');
   }, (err) => {
-    handleLocError("Standort konnte nicht ermittelt werden (" + err.message + "). Bitte Ort manuell eingeben.");
+    document.getElementById('locText').textContent = "Standort nicht verfügbar (" + err.message + ") — Tour funktioniert trotzdem";
+    document.getElementById('locDot').classList.add('err');
   }, {enableHighAccuracy:true, timeout:10000});
-});
+})();
 
-function handleLocError(msg){
-  hide('locStatus');
-  document.getElementById('locErr').textContent = msg;
-  show('locErr');
-  show('manualLocWrap');
+// ---- OSRM Hilfsfunktionen ----
+async function osrmRoute(profile, coordsLonLat){
+  // coordsLonLat: array of [lon,lat]
+  const coordStr = coordsLonLat.map(c => c[0]+','+c[1]).join(';');
+  const url = `https://router.project-osrm.org/route/v1/${profile}/${coordStr}?overview=full&geometries=geojson`;
+  const res = await fetch(url);
+  const j = await res.json();
+  if(!j.routes || !j.routes.length) throw new Error('keine Route');
+  return j.routes[0]; // { duration (s), distance (m), geometry: {coordinates:[[lon,lat],...]} }
 }
 
-document.getElementById('btnManualLoc').addEventListener('click', () => {
-  const v = document.getElementById('manualLoc').value.trim();
-  if(!v) return;
-  state.locationLabel = v;
-  state.lat = null; state.lon = null;
-  goToIdeas();
-});
-
-function goToIdeas(){
-  document.getElementById('locboxDisplay').innerHTML = `📍 Standort: <strong>${escapeHtml(state.locationLabel)}</strong>`;
-  setStep(1);
+function fmtDuration(seconds){
+  const min = Math.round(seconds/60);
+  if(min < 60) return `${min} Min`;
+  const h = Math.floor(min/60), m = min%60;
+  return m>0 ? `${h} Std ${m} Min` : `${h} Std`;
 }
 
-// ---- Step 1: Ideen -> Vorschläge ----
-document.getElementById('btnGenerate').addEventListener('click', async () => {
-  state.ideas = document.getElementById('ideasInput').value.trim();
-  if(!state.ideas){
-    document.getElementById('genErr').textContent = "Bitte kurz beschreiben, worauf du Lust hast.";
-    show('genErr');
-    return;
+// ---- Idee -> Vorschlag ----
+document.getElementById('btnGenerate').addEventListener('click', () => generateProposal(false));
+document.getElementById('btnRegenerate').addEventListener('click', () => generateProposal(true));
+
+async function generateProposal(isRegenerate){
+  if(!isRegenerate){
+    state.ideas = document.getElementById('ideasInput').value.trim();
+    if(!state.ideas){
+      document.getElementById('genErr').textContent = "Bitte kurz beschreiben, worauf du Lust hast.";
+      show('genErr');
+      return;
+    }
   }
-  hide('genErr');
+  hide('genErr'); hide('confirmErr');
+  document.getElementById('genStatusText').textContent = isRegenerate ? "Claude entwirft eine Alternative…" : "Claude entwirft die Tour…";
   show('genStatus');
   document.getElementById('btnGenerate').disabled = true;
+  document.getElementById('btnRegenerate').disabled = true;
   try{
     const sys = "Du bist ein lokaler Reiseplaner. Antworte AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Erklärtext, ohne Codeblock-Zeichen.";
-    const usr = `Standort: ${state.locationLabel}${state.lat?` (${state.lat.toFixed(4)}, ${state.lon.toFixed(4)})`:''}.
-Ideen des Nutzers für eine Tagesausflug-Tour mit dem Auto: "${state.ideas}"
+    const avoid = state.previousTitles.length ? `\nVermeide diese bereits gezeigten Vorschläge und mach etwas spürbar anderes: ${state.previousTitles.join(', ')}.` : '';
+    const usr = `Standort: ${state.locationLabel || 'unbekannt, nimm eine plausible Region in Deutschland an'}${state.lat?` (${state.lat.toFixed(4)}, ${state.lon.toFixed(4)})`:''}.
+Idee des Nutzers für einen Tagesausflug: "${state.ideas}"${avoid}
 
-Erstelle genau 2 unterschiedliche, konkrete Vorschläge für eine eintägige Autotour in der Umgebung, die zu diesen Ideen passen. Jeder Vorschlag hat 2-4 reale, plausible Stationen (mit echten oder sehr wahrscheinlichen Ortsnamen/Adressen in der Region), in sinnvoller Reihenfolge für eine Rundfahrt.
+Entwirf GENAU EINEN konkreten Vorschlag. Entscheide zuerst selbst, ob es sich eher um
+(a) "ziel" handelt — ein einzelnes Ausflugsziel (z. B. ein Lokal, eine Burg, ein Aussichtspunkt), oder
+(b) "autotour" — eine Rundfahrt mit mehreren Stopps.
+Falls es am Ziel sinnvoll ist, danach zu Fuß weiterzugehen (Wanderung, Spaziergang, Rundweg), ergänze ein "hike"-Objekt, sonst setze "hike" auf null.
+
+Schreibe die Beschreibung ausführlich und sprachlich lebendig: Highlights, Atmosphäre, warum es sich lohnt, 4-6 Sätze.
+Gib für jeden Stopp echte, für Google Maps auffindbare Adressen und eine ungefähre Koordinate (lat/lon) an, auch wenn nur geschätzt.
 
 Gib NUR folgendes JSON zurück:
 {
-  "proposals": [
-    {
-      "title": "kurzer prägnanter Titel",
-      "description": "2-3 Sätze Beschreibung der Tour, warum sie passt",
-      "stops": [
-        {"name": "Name des Orts", "address": "Adresse oder Ort, Land - so konkret wie möglich für Google Maps"}
-      ]
-    }
-  ]
+  "type": "ziel" | "autotour",
+  "title": "kurzer prägnanter Titel",
+  "description": "ausführliche, lebendige Beschreibung mit Highlights",
+  "stops": [
+    {"name":"...", "address":"...", "lat":0.0, "lon":0.0, "note":"kurzer Hinweis was man dort macht/erlebt"}
+  ],
+  "hike": null | {
+    "name": "Name der Wanderung/des Rundwegs",
+    "description": "1-2 Sätze wozu/was man sieht",
+    "distance_km_estimate": 0.0,
+    "waypoints": [
+      {"name":"Startpunkt (=Autoziel)", "lat":0.0, "lon":0.0},
+      {"name":"...", "lat":0.0, "lon":0.0}
+    ]
+  }
 }`;
-    const result = await callClaude(sys, usr, 1400);
-    state.proposals = result.proposals;
-    renderProposals();
-    setStep(2);
+    const result = await callClaude(sys, usr, 1800);
+    state.proposal = result;
+    state.previousTitles.push(result.title);
+    renderProposal();
+    show('proposalCard');
+    document.getElementById('proposalCard').scrollIntoView({behavior:'smooth', block:'start'});
   }catch(e){
     document.getElementById('genErr').textContent = "Fehler beim Generieren: " + e.message;
     show('genErr');
   }finally{
     hide('genStatus');
     document.getElementById('btnGenerate').disabled = false;
+    document.getElementById('btnRegenerate').disabled = false;
   }
-});
-
-document.getElementById('backTo1').addEventListener('click', () => setStep(1));
-
-function renderProposals(){
-  const wrap = document.getElementById('proposalsWrap');
-  wrap.innerHTML = '';
-  state.proposals.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'proposal';
-    div.innerHTML = `
-      <h3>${escapeHtml(p.title)}</h3>
-      <p>${escapeHtml(p.description)}</p>
-      <ul class="stoplist">
-        ${p.stops.map((s,idx)=>`<li><span class="idx">${idx+1}</span><span><strong>${escapeHtml(s.name)}</strong><br><span style="color:var(--muted)">${escapeHtml(s.address)}</span></span></li>`).join('')}
-      </ul>
-      <button class="btn secondary" style="margin-top:8px;" data-idx="${i}">Diesen Vorschlag wählen</button>
-    `;
-    div.querySelector('button').addEventListener('click', () => selectProposal(i));
-    wrap.appendChild(div);
-  });
 }
 
-function selectProposal(i){
-  state.selectedIndex = i;
-  const p = state.proposals[i];
-  const stopsText = p.stops.map(s => `- ${s.name} (${s.address})`).join('\n');
-  state.editedText = `${p.title}\n\n${p.description}\n\nStationen:\n${stopsText}`;
-  document.getElementById('editInput').value = state.editedText;
-  setStep(3);
+function renderProposal(){
+  const p = state.proposal;
+  document.getElementById('propType').textContent = p.type === 'autotour' ? 'Autotour, mehrere Stopps' : 'Einzelnes Ziel';
+  document.getElementById('propTitle').textContent = p.title;
+  document.getElementById('propDesc').textContent = p.description;
+
+  const stopsEl = document.getElementById('propStops');
+  stopsEl.innerHTML = p.stops.map((s,i) => `
+    <li>
+      <span class="idx">${i+1}</span>
+      <span>
+        <div class="name">${escapeHtml(s.name)}</div>
+        <div class="addr">${escapeHtml(s.address)}</div>
+        ${s.note ? `<div class="note">${escapeHtml(s.note)}</div>` : ''}
+      </span>
+    </li>`).join('');
+
+  const hikeBox = document.getElementById('propHikeBox');
+  if(p.hike){
+    hikeBox.innerHTML = `
+      <div class="htitle">🥾 ${escapeHtml(p.hike.name)}</div>
+      <div class="hmeta">${escapeHtml(p.hike.description || '')}</div>
+      <div class="hmeta">ca. ${p.hike.distance_km_estimate} km</div>`;
+    show('propHikeBox');
+  } else {
+    hide('propHikeBox');
+  }
+
+  const stopsText = p.stops.map(s => `- ${s.name} (${s.address})${s.note ? ': '+s.note : ''}`).join('\n');
+  const hikeText = p.hike ? `\n\nWanderung: ${p.hike.name} (ca. ${p.hike.distance_km_estimate} km) - ${p.hike.description||''}` : '';
+  const editText = `${p.title}\n\n${p.description}\n\nStationen:\n${stopsText}${hikeText}`;
+  document.getElementById('editInput').value = editText;
+  document.getElementById('editInput').dataset.original = editText;
 }
 
-document.getElementById('backTo2').addEventListener('click', () => setStep(2));
-
-// ---- Step 3: Bearbeiten -> Bestätigen ----
+// ---- Bestätigen ----
 document.getElementById('btnConfirm').addEventListener('click', async () => {
   const editedNow = document.getElementById('editInput').value.trim();
-  const original = state.proposals[state.selectedIndex];
-  const wasEdited = editedNow !== state.editedText;
+  const wasEdited = editedNow !== document.getElementById('editInput').dataset.original;
   hide('confirmErr');
+  document.getElementById('confirmStatusText').textContent = "Route wird finalisiert…";
   show('confirmStatus');
   document.getElementById('btnConfirm').disabled = true;
   try{
     let finalData;
     if(wasEdited){
-      const sys = "Du bist ein Reiseplaner-Assistent. Antworte AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Codeblock-Zeichen.";
-      const usr = `Ursprünglicher Vorschlag (JSON): ${JSON.stringify(original)}
+      const sys = "Du bist ein Reiseplaner-Assistent. Antworte AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Codeblock-Zeichen. Halte dich exakt an das vorgegebene JSON-Schema.";
+      const usr = `Ursprünglicher Vorschlag (JSON): ${JSON.stringify(state.proposal)}
 
-Der Nutzer hat diesen Text bearbeitet/angepasst:
+Der Nutzer hat diesen Text bearbeitet:
 """
 ${editedNow}
 """
 
-Leite daraus die finale, aktualisierte Tour ab. Behalte reale, für Google Maps auffindbare Adressen/Ortsnamen bei bzw. ergänze sie sinnvoll, falls der Nutzer neue Orte genannt hat. Gib NUR folgendes JSON zurück:
-{
-  "title": "finaler Titel",
-  "description": "1-2 Sätze finale Beschreibung",
-  "stops": [{"name":"...", "address":"..."}]
-}`;
-      finalData = await callClaude(sys, usr, 1000);
+Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Original (type, title, description, stops[{name,address,lat,lon,note}], hike). Behalte reale, für Google Maps auffindbare Adressen/Koordinaten bei bzw. ergänze passend, falls neue Orte genannt wurden. Gib NUR das JSON zurück.`;
+      finalData = await callClaude(sys, usr, 1800);
     } else {
-      finalData = { title: original.title, description: original.description, stops: original.stops };
+      finalData = state.proposal;
     }
+
+    // Fahrzeiten pro Etappe berechnen
+    document.getElementById('confirmStatusText').textContent = "Fahrzeiten werden berechnet…";
+    const legs = [];
+    let originPoint = (state.lat!=null) ? [state.lon, state.lat] : null;
+    for(const stop of finalData.stops){
+      let legInfo = null;
+      if(originPoint && stop.lat!=null && stop.lon!=null){
+        try{
+          const route = await osrmRoute('driving', [originPoint, [stop.lon, stop.lat]]);
+          legInfo = { duration: fmtDuration(route.duration), distanceKm: (route.distance/1000).toFixed(1) };
+        }catch(e){ legInfo = null; }
+      }
+      legs.push(legInfo);
+      if(stop.lat!=null && stop.lon!=null) originPoint = [stop.lon, stop.lat];
+    }
+    finalData._legs = legs;
+
+    // Wanderung: Route + KML
+    if(finalData.hike && finalData.hike.waypoints && finalData.hike.waypoints.length >= 2){
+      document.getElementById('confirmStatusText').textContent = "Wanderroute wird berechnet…";
+      const wp = finalData.hike.waypoints;
+      const coords = wp.map(w => [w.lon, w.lat]);
+      try{
+        const route = await osrmRoute('foot', coords);
+        finalData.hike._duration = fmtDuration(route.duration);
+        finalData.hike._distanceKm = (route.distance/1000).toFixed(1);
+        finalData.hike._geometry = route.geometry.coordinates; // [[lon,lat],...]
+      }catch(e){
+        finalData.hike._duration = null;
+        finalData.hike._geometry = coords; // Fallback: gerade Linie zwischen Wegpunkten
+      }
+    }
+
     state.finalTour = finalData;
     renderFinal();
-    setStep(4);
+    hide('proposalCard');
+    show('resultCard');
+    document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
   }catch(e){
     document.getElementById('confirmErr').textContent = "Fehler beim Finalisieren: " + e.message;
     show('confirmErr');
@@ -503,46 +419,117 @@ Leite daraus die finale, aktualisierte Tour ab. Behalte reale, für Google Maps 
 function renderFinal(){
   const t = state.finalTour;
   document.getElementById('finalTitle').textContent = t.title;
-  document.getElementById('finalDesc').textContent = t.description;
-  const stopsEl = document.getElementById('routeStops');
-  stopsEl.innerHTML = t.stops.map(s => `
-    <div class="route-stop">
-      <div class="name">${escapeHtml(s.name)}</div>
-      <div class="addr">${escapeHtml(s.address)}</div>
-    </div>`).join('');
 
-  const addresses = t.stops.map(s => s.address);
-  const startPoint = encodeURIComponent(addresses[0]);
-  const destination = encodeURIComponent(addresses[addresses.length-1]);
-  const middle = addresses.slice(1, -1).map(a => encodeURIComponent(a)).join('|');
+  const stopsListEl = document.getElementById('finalStopsList');
+  stopsListEl.innerHTML = '<ul class="stoplist">' + t.stops.map((s,i) => {
+    const leg = t._legs[i];
+    return `
+    <li>
+      <span class="idx">${i+1}</span>
+      <span>
+        <div class="name">${escapeHtml(s.name)}</div>
+        <div class="addr">${escapeHtml(s.address)}</div>
+        ${leg ? `<div class="time">🚗 ca. ${leg.duration} (${leg.distanceKm} km) ab vorherigem Punkt</div>` : ''}
+        ${s.note ? `<div class="note">${escapeHtml(s.note)}</div>` : ''}
+      </span>
+    </li>`;
+  }).join('') + '</ul>';
 
-  const driveLink = `https://www.google.com/maps/dir/?api=1&destination=${startPoint}&travelmode=driving`;
-  let tourLink = `https://www.google.com/maps/dir/?api=1&origin=${startPoint}&destination=${destination}&travelmode=driving`;
-  if(middle) tourLink += `&waypoints=${middle}`;
+  const hikeEl = document.getElementById('finalHikeBox');
+  if(t.hike){
+    hikeEl.innerHTML = `
+      <div class="hikebox">
+        <div class="htitle">🥾 ${escapeHtml(t.hike.name)}</div>
+        <div class="hmeta">${escapeHtml(t.hike.description||'')}</div>
+        <div class="hmeta">${t.hike._duration ? '⏱ ca. '+t.hike._duration+' &middot; ' : ''}📏 ca. ${t.hike._distanceKm || t.hike.distance_km_estimate} km zu Fuß</div>
+      </div>`;
+  } else {
+    hikeEl.innerHTML = '';
+  }
 
-  document.getElementById('mapLinks').innerHTML = `
-    <a class="maplink" href="${driveLink}" target="_blank" rel="noopener">
-      <div class="ic a">🚗</div>
-      <div><div class="t">Hinfahrt starten</div><div class="s">Navigation zum ersten Stopp: ${escapeHtml(t.stops[0].name)}</div></div>
-    </a>
-    <a class="maplink" href="${tourLink}" target="_blank" rel="noopener">
-      <div class="ic b">🗺️</div>
-      <div><div class="t">Ganze Tour öffnen</div><div class="s">Alle ${t.stops.length} Stationen in Google Maps</div></div>
-    </a>
-  `;
+  // Google Maps Links
+  const links = [];
+  if(t.type === 'ziel'){
+    const dest = encodeURIComponent(t.stops[0].address);
+    links.push({ label: 'Zum Ziel navigieren', sub: t.stops[0].name, icon:'🚗',
+      url: `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving` });
+  } else {
+    const addresses = t.stops.map(s => encodeURIComponent(s.address));
+    const startPoint = addresses[0];
+    const destination = addresses[addresses.length-1];
+    const middle = addresses.slice(1, -1).join('|');
+    let tourLink = `https://www.google.com/maps/dir/?api=1&origin=${startPoint}&destination=${destination}&travelmode=driving`;
+    if(middle) tourLink += `&waypoints=${middle}`;
+    links.push({ label:'Ganze Tour öffnen', sub:`Alle ${t.stops.length} Stationen`, icon:'🗺️', url: tourLink });
+    t.stops.forEach((s,i) => {
+      links.push({ label:`Stopp ${i+1}: ${s.name}`, sub:'Einzeln navigieren', icon:'📍',
+        url:`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(s.address)}&travelmode=driving` });
+    });
+  }
+  document.getElementById('mapLinks').innerHTML = links.map(l => `
+    <a class="maplink" href="${l.url}" target="_blank" rel="noopener">
+      <div class="ic ${l===links[0]?'a':'b'}">${l.icon}</div>
+      <div><div class="t">${escapeHtml(l.label)}</div><div class="s">${escapeHtml(l.sub)}</div></div>
+    </a>`).join('');
+
+  // KML Download
+  const kmlWrap = document.getElementById('kmlWrap');
+  if(t.hike && t.hike._geometry){
+    const kml = buildKML(t.hike, t.stops);
+    const blob = new Blob([kml], {type:'application/vnd.google-earth.kml+xml'});
+    const url = URL.createObjectURL(blob);
+    kmlWrap.innerHTML = `
+      <a class="maplink" href="${url}" download="${slugify(t.hike.name)}.kml">
+        <div class="ic b">⬇️</div>
+        <div><div class="t">Wanderung als .kml herunterladen</div><div class="s">Für maps.me & andere Karten-Apps</div></div>
+      </a>`;
+  } else {
+    kmlWrap.innerHTML = '';
+  }
+}
+
+function slugify(str){
+  return (str||'wanderung').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'wanderung';
+}
+
+function buildKML(hike, carStops){
+  const wp = hike.waypoints;
+  const geometry = hike._geometry; // [[lon,lat],...]
+  const lineCoords = geometry.map(c => `${c[0]},${c[1]},0`).join(' ');
+  const placemarks = wp.map(w => `
+    <Placemark>
+      <name>${escapeXml(w.name)}</name>
+      <Point><coordinates>${w.lon},${w.lat},0</coordinates></Point>
+    </Placemark>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>${escapeXml(hike.name)}</name>
+  <description>${escapeXml(hike.description || '')}</description>
+  ${placemarks}
+  <Placemark>
+    <name>${escapeXml(hike.name)} - Route</name>
+    <Style><LineStyle><color>ff3da84f</color><width>4</width></LineStyle></Style>
+    <LineString>
+      <tessellate>1</tessellate>
+      <coordinates>${lineCoords}</coordinates>
+    </LineString>
+  </Placemark>
+</Document>
+</kml>`;
+}
+
+function escapeXml(str){
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 document.getElementById('restartLink').addEventListener('click', () => {
-  state.proposals = []; state.selectedIndex = null; state.finalTour = null;
+  state.proposal = null; state.finalTour = null; state.previousTitles = [];
   document.getElementById('ideasInput').value = '';
-  setStep(1);
+  hide('resultCard'); hide('proposalCard');
+  show('ideaCard');
+  window.scrollTo({top:0, behavior:'smooth'});
 });
-
-function escapeHtml(str){
-  const d = document.createElement('div');
-  d.textContent = str ?? '';
-  return d.innerHTML;
-}
 </script>
 </body>
 </html>
