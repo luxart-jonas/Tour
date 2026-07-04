@@ -108,6 +108,12 @@
   .hikebox{background:#0d1826;border:1px solid var(--teal-dim);border-radius:12px;padding:16px;margin-bottom:16px;}
   .hikebox .htitle{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95rem;margin-bottom:6px;}
   .hikebox .hmeta{color:var(--muted);font-size:0.82rem;margin-bottom:4px;}
+  .hardfacts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .hardfacts .chip{
+    display:flex;align-items:center;gap:6px;background:var(--teal-dim);border:1px solid var(--teal);
+    color:var(--text);font-size:0.82rem;font-weight:600;padding:6px 11px;border-radius:20px;
+  }
+  .hardfacts .chip.pending{background:var(--line);border-color:var(--line);color:var(--muted);font-weight:500;}
 
   .maplinks{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
   .maplink{
@@ -161,11 +167,11 @@
   <div class="card hide" id="proposalCard">
     <span class="propType" id="propType"></span>
     <h3 class="propTitle" id="propTitle"></h3>
+    <div class="hikebox hide" id="propHikeBox"></div>
     <p class="propDesc" id="propDesc"></p>
     <div class="highlights-label hide" id="propHLabel">Highlights</div>
     <ul class="highlights" id="propHighlights"></ul>
     <ul class="stoplist" id="propStops"></ul>
-    <div class="hikebox hide" id="propHikeBox"></div>
 
     <label style="margin-top:6px;">Anpassen (optional)</label>
     <textarea id="editInput" rows="5"></textarea>
@@ -181,11 +187,11 @@
   <div class="card hide" id="resultCard">
     <label>Deine Tour ist fertig</label>
     <h3 id="finalTitle" style="font-family:'Fraunces',serif;font-size:1.25rem;margin:6px 0 10px;"></h3>
+    <div id="finalHikeBox"></div>
     <p id="finalDesc" class="propDesc"></p>
     <div class="highlights-label hide" id="finalHLabel">Highlights</div>
     <ul class="highlights" id="finalHighlights"></ul>
     <div id="finalStopsList"></div>
-    <div id="finalHikeBox"></div>
     <div class="maplinks" id="mapLinks"></div>
     <div id="kmlWrap"></div>
     <p class="disclaimer">Fahrzeiten sind Schätzungen auf Basis ungefährer Koordinaten, keine Garantie. Bei der Wanderung prüfe die Route vor Ort.</p>
@@ -215,9 +221,16 @@ apiKeyInput.addEventListener('change', () => {
   setTimeout(()=>hide('apiKeySaved'), 2000);
 });
 
-async function callClaude(systemPrompt, userPrompt, maxTokens=1600){
+async function callClaude(systemPrompt, userPrompt, maxTokens=1600, tools=null){
   const key = localStorage.getItem('ant_key');
   if(!key) throw new Error("Bitte zuerst deinen Anthropic API-Key oben eintragen.");
+  const body = {
+    model: "claude-sonnet-4-6",
+    max_tokens: maxTokens,
+    system: systemPrompt,
+    messages: [{role:"user", content:userPrompt}]
+  };
+  if(tools) body.tools = tools;
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -226,18 +239,16 @@ async function callClaude(systemPrompt, userPrompt, maxTokens=1600){
       "anthropic-version": "2023-06-01",
       "anthropic-dangerous-direct-browser-access": "true"
     },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{role:"user", content:userPrompt}]
-    })
+    body: JSON.stringify(body)
   });
   const data = await response.json();
   if(data.error) throw new Error(data.error.message || "API-Fehler");
   const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
   const clean = text.replace(/```json|```/g,"").trim();
-  return JSON.parse(clean);
+  const start = clean.indexOf('{');
+  const end = clean.lastIndexOf('}');
+  if(start === -1 || end === -1) throw new Error("Keine gültige JSON-Antwort erhalten.");
+  return JSON.parse(clean.slice(start, end+1));
 }
 
 // ---- Standort im Hintergrund ----
@@ -284,6 +295,89 @@ function fmtDuration(seconds){
   return m>0 ? `${h} Std ${m} Min` : `${h} Std`;
 }
 
+// ---- Overpass: echte kartierte Wanderwege finden statt erfundener Strecken ----
+function haversineM(a, b){
+  // a, b: [lon, lat]
+  const R = 6371000;
+  const toRad = d => d * Math.PI/180;
+  const dLat = toRad(b[1]-a[1]);
+  const dLon = toRad(b[0]-a[0]);
+  const lat1 = toRad(a[1]), lat2 = toRad(b[1]);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+
+async function overpassFindHikingRoutes(lat, lon, radiusM=15000){
+  const query = `[out:json][timeout:25];
+rel(around:${radiusM},${lat},${lon})["route"~"hiking|foot"];
+out tags;`;
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST', body: 'data=' + encodeURIComponent(query),
+    headers: {'Content-Type':'application/x-www-form-urlencoded'}
+  });
+  const j = await res.json();
+  return (j.elements || []).filter(e => e.tags && e.tags.name);
+}
+
+async function overpassGetRouteGeometry(relationId){
+  const query = `[out:json][timeout:25];
+relation(${relationId});
+(._;>;);
+out geom;`;
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST', body: 'data=' + encodeURIComponent(query),
+    headers: {'Content-Type':'application/x-www-form-urlencoded'}
+  });
+  const j = await res.json();
+  const rel = (j.elements || []).find(e => e.type === 'relation');
+  if(!rel) throw new Error('Relation nicht gefunden');
+  const wayGeom = {};
+  (j.elements || []).forEach(e => {
+    if(e.type === 'way' && e.geometry){
+      wayGeom[e.id] = e.geometry.map(pt => [pt.lon, pt.lat]);
+    }
+  });
+  let coords = [];
+  (rel.members || []).forEach(m => {
+    if(m.type !== 'way') return;
+    const g = wayGeom[m.ref];
+    if(!g || !g.length) return;
+    if(coords.length === 0){
+      coords = g.slice();
+    } else {
+      const last = coords[coords.length-1];
+      const piece = (haversineM(last, g[g.length-1]) < haversineM(last, g[0])) ? g.slice().reverse() : g.slice();
+      coords = (haversineM(coords[coords.length-1], piece[0]) < 15) ? coords.concat(piece.slice(1)) : coords.concat(piece);
+    }
+  });
+  return coords;
+}
+
+function pickBestRouteMatch(routes, hikeName){
+  if(!routes.length) return null;
+  const nameLower = (hikeName||'').toLowerCase();
+  let best = routes.find(r => r.tags.name && (r.tags.name.toLowerCase().includes(nameLower) || nameLower.includes(r.tags.name.toLowerCase())));
+  return best || routes[0];
+}
+
+async function tryFindRealHikeRoute(hike, centerLat, centerLon){
+  const routes = await overpassFindHikingRoutes(centerLat, centerLon);
+  const match = pickBestRouteMatch(routes, hike.name);
+  if(!match) return null;
+  const coords = await overpassGetRouteGeometry(match.id);
+  if(!coords.length) return null;
+  let distM = 0;
+  for(let i=1;i<coords.length;i++) distM += haversineM(coords[i-1], coords[i]);
+  const distanceKm = distM/1000;
+  const durationSec = (distanceKm/4.3)*3600; // ca. 4.3 km/h Wandertempo, ohne Höhenprofil
+  return {
+    geometry: coords,
+    distanceKm: distanceKm.toFixed(1),
+    duration: fmtDuration(durationSec),
+    matchedName: match.tags.name
+  };
+}
+
 // ---- Idee -> Vorschlag ----
 document.getElementById('btnGenerate').addEventListener('click', () => generateProposal(false));
 document.getElementById('btnRegenerate').addEventListener('click', () => generateProposal(true));
@@ -298,12 +392,12 @@ async function generateProposal(isRegenerate){
     }
   }
   hide('genErr'); hide('confirmErr');
-  document.getElementById('genStatusText').textContent = isRegenerate ? "Claude entwirft eine Alternative…" : "Claude entwirft die Tour…";
+  document.getElementById('genStatusText').textContent = isRegenerate ? "Claude recherchiert eine Alternative…" : "Claude recherchiert & entwirft die Tour…";
   show('genStatus');
   document.getElementById('btnGenerate').disabled = true;
   document.getElementById('btnRegenerate').disabled = true;
   try{
-    const sys = "Du bist ein erfahrener, geschmackssicherer Reisekurator, der für einen kleinen Premium-Reiseführer schreibt — kein Zufallsgenerator. Jede Empfehlung ist eine echte, begründete Wahl, kein beliebiges Zusammenwürfeln. Antworte AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Erklärtext, ohne Codeblock-Zeichen.";
+    const sys = "Du bist ein erfahrener, geschmackssicherer Reisekurator, der für einen kleinen Premium-Reiseführer schreibt — kein Zufallsgenerator. Jede Empfehlung ist eine echte, begründete Wahl, kein beliebiges Zusammenwürfeln. Wenn du dir bei einem Ort oder Wanderweg nicht sicher bist, nutze die Websuche, statt zu raten. Antworte am Ende AUSSCHLIESSLICH mit validem JSON, ohne Markdown, ohne Codeblock-Zeichen — dein finaler Text darf nur das JSON-Objekt enthalten, keine Zusammenfassung der Recherche.";
     const avoid = state.previousTitles.length ? `\nVermeide diese bereits gezeigten Vorschläge und mach etwas spürbar anderes: ${state.previousTitles.join(', ')}.` : '';
     const usr = `Standort: ${state.locationLabel || 'unbekannt, nimm eine plausible Region in Deutschland an'}${state.lat?` (${state.lat.toFixed(4)}, ${state.lon.toFixed(4)})`:''}.
 Idee des Nutzers für einen Tagesausflug: "${state.ideas}"${avoid}
@@ -311,7 +405,7 @@ Idee des Nutzers für einen Tagesausflug: "${state.ideas}"${avoid}
 Kuratiere GENAU EINEN durchdachten Vorschlag, so wie ein guter Reiseführer eine einzelne, wirklich lohnende Empfehlung ausspricht — nicht die naheliegendste Zufallskombination. Entscheide zuerst selbst, ob es sich eher um
 (a) "ziel" handelt — ein einzelnes Ausflugsziel (z. B. ein Lokal, eine Burg, ein Aussichtspunkt), oder
 (b) "autotour" — eine Rundfahrt mit mehreren Stopps.
-Falls es am Ziel sinnvoll ist, danach zu Fuß weiterzugehen (Wanderung, Spaziergang, Rundweg), ergänze ein "hike"-Objekt, sonst setze "hike" auf null.
+Falls es am Ziel sinnvoll ist, danach zu Fuß weiterzugehen (Wanderung, Spaziergang, Rundweg): Nutze die Websuche, um einen ECHTEN, bereits von Menschen gegangenen und empfohlenen Wanderweg in der Nähe zu finden (z. B. über Komoot, Outdooractive, Wanderbares Deutschland, regionale Tourismus-/Wandervereins-Seiten). Erfinde KEINEN Wanderweg und erfinde KEINE genaue Länge/Dauer — die App berechnet Länge und Dauer selbst aus echten Kartendaten, sobald der Nutzer bestätigt. Gib nur an, ob es ein Rundweg ("loop": true) oder ein Hin- und Rückweg auf gleicher Strecke ("loop": false) ist, plus eine grobe Größenordnung zur Orientierung (distance_km_estimate darf ungefähr sein, wird nicht direkt angezeigt). Falls du wirklich keinen passenden echten Weg findest, setze "hike" auf null, statt einen zu erfinden.
 
 Schreibe die Beschreibung ausführlich und sprachlich lebendig: Atmosphäre, warum gerade diese Wahl, 4-6 Sätze.
 Ergänze danach 3-5 kurze, prägnante Highlights (je 3-8 Wörter, konkret statt generisch, z. B. "Terrasse mit Blick auf die Sieg" statt "schöne Aussicht").
@@ -327,7 +421,9 @@ Gib NUR folgendes JSON zurück:
     {"name":"...", "address":"...", "lat":0.0, "lon":0.0, "note":"kurzer Hinweis was man dort macht/erlebt"}
   ],
   "hike": null | {
-    "name": "Name der Wanderung/des Rundwegs",
+    "name": "echter Name des Wanderwegs (aus der Websuche)",
+    "loop": true | false,
+    "source_hint": "Woher der Name stammt, z. B. 'Outdooractive' oder 'Wanderbares Deutschland'",
     "description": "1-2 Sätze wozu/was man sieht",
     "distance_km_estimate": 0.0,
     "waypoints": [
@@ -336,7 +432,7 @@ Gib NUR folgendes JSON zurück:
     ]
   }
 }`;
-    const result = await callClaude(sys, usr, 1800);
+    const result = await callClaude(sys, usr, 2600, [{"type":"web_search_20250305","name":"web_search"}]);
     state.proposal = result;
     state.previousTitles.push(result.title);
     renderProposal();
@@ -382,8 +478,11 @@ function renderProposal(){
   if(p.hike){
     hikeBox.innerHTML = `
       <div class="htitle">🥾 ${escapeHtml(p.hike.name)}</div>
-      <div class="hmeta">${escapeHtml(p.hike.description || '')}</div>
-      <div class="hmeta">ca. ${p.hike.distance_km_estimate} km</div>`;
+      <div class="hardfacts">
+        <span class="chip pending">${p.hike.loop ? '↻ Rundweg' : '↔ Hin- und Rückweg'}</span>
+        <span class="chip pending">Länge &amp; Dauer: nach Bestätigung</span>
+      </div>
+      <div class="hmeta">${escapeHtml(p.hike.description || '')}</div>`;
     show('propHikeBox');
   } else {
     hide('propHikeBox');
@@ -416,7 +515,7 @@ Der Nutzer hat diesen Text bearbeitet:
 ${editedNow}
 """
 
-Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Original (type, title, description, highlights[], stops[{name,address,lat,lon,note}], hike). Behalte reale, für Google Maps auffindbare Adressen/Koordinaten bei bzw. ergänze passend, falls neue Orte genannt wurden. Gib NUR das JSON zurück.`;
+Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Original (type, title, description, highlights[], stops[{name,address,lat,lon,note}], hike inkl. "loop" true/false). Behalte reale, für Google Maps auffindbare Adressen/Koordinaten bei bzw. ergänze passend, falls neue Orte genannt wurden. Erfinde keine genaue Länge/Dauer für die Wanderung. Gib NUR das JSON zurück.`;
       finalData = await callClaude(sys, usr, 1800);
     } else {
       finalData = state.proposal;
@@ -439,19 +538,41 @@ Leite die finale, aktualisierte Tour ab, mit demselben JSON-Schema wie das Origi
     }
     finalData._legs = legs;
 
-    // Wanderung: Route + KML
+    // Wanderung: zuerst echten kartierten Weg via OSM/Overpass suchen
     if(finalData.hike && finalData.hike.waypoints && finalData.hike.waypoints.length >= 2){
-      document.getElementById('confirmStatusText').textContent = "Wanderroute wird berechnet…";
-      const wp = finalData.hike.waypoints;
-      const coords = wp.map(w => [w.lon, w.lat]);
+      document.getElementById('confirmStatusText').textContent = "Suche echten Wanderweg in der Nähe…";
+      const start = finalData.hike.waypoints[0];
+      let realRoute = null;
       try{
-        const route = await osrmRoute('foot', coords);
-        finalData.hike._duration = fmtDuration(route.duration);
-        finalData.hike._distanceKm = (route.distance/1000).toFixed(1);
-        finalData.hike._geometry = route.geometry.coordinates; // [[lon,lat],...]
-      }catch(e){
-        finalData.hike._duration = null;
-        finalData.hike._geometry = coords; // Fallback: gerade Linie zwischen Wegpunkten
+        realRoute = await tryFindRealHikeRoute(finalData.hike, start.lat, start.lon);
+      }catch(e){ realRoute = null; }
+
+      if(realRoute){
+        const loop = !!finalData.hike.loop;
+        finalData.hike._geometry = realRoute.geometry;
+        finalData.hike._distanceKm = loop ? realRoute.distanceKm : (parseFloat(realRoute.distanceKm)*2).toFixed(1);
+        finalData.hike._duration = loop ? realRoute.duration : fmtDuration(parseFloat(realRoute.distanceKm)*2/4.3*3600);
+        finalData.hike._oneWayKm = realRoute.distanceKm;
+        finalData.hike._source = 'osm';
+        finalData.hike._matchedName = realRoute.matchedName;
+      } else {
+        document.getElementById('confirmStatusText').textContent = "Kein kartierter Weg gefunden, schätze Verbindung…";
+        const wp = finalData.hike.waypoints;
+        const coords = wp.map(w => [w.lon, w.lat]);
+        const loop = !!finalData.hike.loop;
+        try{
+          const route = await osrmRoute('foot', coords);
+          const oneWayKm = route.distance/1000;
+          finalData.hike._oneWayKm = oneWayKm.toFixed(1);
+          finalData.hike._distanceKm = loop ? oneWayKm.toFixed(1) : (oneWayKm*2).toFixed(1);
+          finalData.hike._duration = loop ? fmtDuration(route.duration) : fmtDuration(route.duration*2);
+          finalData.hike._geometry = route.geometry.coordinates;
+        }catch(e){
+          finalData.hike._duration = null;
+          finalData.hike._distanceKm = null;
+          finalData.hike._geometry = coords;
+        }
+        finalData.hike._source = 'geschätzt';
       }
     }
 
@@ -500,11 +621,25 @@ function renderFinal(fromStorage){
 
   const hikeEl = document.getElementById('finalHikeBox');
   if(t.hike){
+    const loop = !!t.hike.loop;
+    const sourceNote = t.hike._source === 'osm'
+      ? `✅ echter kartierter Wanderweg${t.hike._matchedName ? ' ("'+escapeHtml(t.hike._matchedName)+'" auf OpenStreetMap)' : ''}`
+      : `⚠️ kein passender kartierter Weg gefunden — geschätzte Verbindung zwischen den Punkten, vor Ort prüfen`;
+    const lengthChip = t.hike._distanceKm
+      ? (loop
+          ? `${t.hike._distanceKm} km Rundweg`
+          : `${t.hike._distanceKm} km gesamt (${t.hike._oneWayKm} km hin + ${t.hike._oneWayKm} km zurück)`)
+      : 'Länge unbekannt';
     hikeEl.innerHTML = `
       <div class="hikebox">
         <div class="htitle">🥾 ${escapeHtml(t.hike.name)}</div>
+        <div class="hardfacts">
+          <span class="chip">${loop ? '↻ Rundweg' : '↔ Hin- und Rückweg'}</span>
+          <span class="chip">📏 ${lengthChip}</span>
+          ${t.hike._duration ? `<span class="chip">⏱ ca. ${t.hike._duration}</span>` : ''}
+        </div>
         <div class="hmeta">${escapeHtml(t.hike.description||'')}</div>
-        <div class="hmeta">${t.hike._duration ? '⏱ ca. '+t.hike._duration+' &middot; ' : ''}📏 ca. ${t.hike._distanceKm || t.hike.distance_km_estimate} km zu Fuß</div>
+        <div class="hmeta" style="margin-top:6px;">${sourceNote}</div>
       </div>`;
   } else {
     hikeEl.innerHTML = '';
